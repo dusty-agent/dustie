@@ -5,8 +5,14 @@ import '../theme/dustie_colors.dart';
 class Bubble extends StatelessWidget {
   final String text;
   final bool isUser;
+  final bool isTyping;
 
-  const Bubble({super.key, required this.text, required this.isUser});
+  const Bubble({
+    super.key,
+    required this.text,
+    required this.isUser,
+    this.isTyping = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,15 +31,21 @@ class Bubble extends StatelessWidget {
         border: Border.all(color: dustieColorSet['border']!),
       ),
 
-      child: Text(
-        text,
+      child:
+          isTyping
+              ? const Text(
+                '...',
 
-        style: TextStyle(
-          color: isUser ? Colors.white : dustieColorSet['textPrimary'],
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              )
+              : Text(
+                text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : dustieColorSet['textPrimary'],
 
-          fontSize: 15,
-        ),
-      ),
+                  fontSize: 15,
+                ),
+              ),
     );
 
     /// user bubble

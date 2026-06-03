@@ -16,6 +16,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   final ScrollController _scrollController = ScrollController();
 
@@ -30,21 +31,38 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String generatedDraft = '';
 
-  void sendMessage() {
+  Future<void> sendMessage() async {
     final text = _controller.text.trim();
 
     if (text.isEmpty) return;
 
+    final reply = _brain.reply(text);
+
     setState(() {
       _messages.add({"text": text, "isUser": true});
 
-      _messages.add({"text": _brain.reply(text), "isUser": false});
+      _messages.add({
+        "text": "...",
+        "isUser": false,
+      }); //_brain.reply(text), "isUser": false});
 
       showConfirmActions = false;
       showDraftActions = false;
     });
 
     _controller.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+
+    scrollToBottom();
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    setState(() {
+      _messages.removeLast();
+
+      _messages.add({"text": reply, "isUser": false});
+    });
 
     scrollToBottom();
   }
@@ -348,34 +366,34 @@ class _ChatScreenState extends State<ChatScreen> {
                             const SizedBox(width: 8),
 
                             /// backup
-                            GestureDetector(
-                              onTap: onBackup,
+                            // GestureDetector(
+                            //   onTap: onBackup,
 
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
+                            //   child: Container(
+                            //     padding: const EdgeInsets.symmetric(
+                            //       horizontal: 14,
+                            //       vertical: 10,
+                            //     ),
 
-                                decoration: BoxDecoration(
-                                  color: dustieColorSet['surface'],
+                            //     decoration: BoxDecoration(
+                            //       color: dustieColorSet['surface'],
 
-                                  borderRadius: BorderRadius.circular(20),
+                            //       borderRadius: BorderRadius.circular(20),
 
-                                  border: Border.all(
-                                    color: dustieColorSet['border']!,
-                                  ),
-                                ),
+                            //       border: Border.all(
+                            //         color: dustieColorSet['border']!,
+                            //       ),
+                            //     ),
 
-                                child: Text(
-                                  'Backup',
+                            //     child: Text(
+                            //       'Backup',
 
-                                  style: TextStyle(
-                                    color: dustieColorSet['textPrimary'],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            //       style: TextStyle(
+                            //         color: dustieColorSet['textPrimary'],
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
@@ -407,9 +425,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,
 
                       decoration: InputDecoration(
-                        hintText: 'Dustie에게 말 걸어보기!',
+                        hintText: 'Dustie에게 하고픈 말..!',
 
                         hintStyle: TextStyle(
                           color: dustieColorSet['textSecondary'],
